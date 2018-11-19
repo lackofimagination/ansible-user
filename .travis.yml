@@ -9,6 +9,7 @@ env:
 
 install:
   - pip install molecule docker passlib
+  - ssh-keygen -b 2048 -t rsa -q -N ""
 
 script:
   - "molecule test --scenario-name $TEST_SCENARIO"
