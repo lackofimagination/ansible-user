@@ -1,0 +1,14 @@
+---
+language: python
+
+services:
+  - docker
+
+env:
+  - TEST_SCENARIO=default
+
+install:
+  - pip install molecule docker passlib
+
+script:
+  - "molecule test --scenario-name $TEST_SCENARIO"

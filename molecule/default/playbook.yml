@@ -1,0 +1,10 @@
+---
+- name: Converge
+  hosts: all
+
+  roles:
+    - role: ansible-user
+      user_name: test
+      user_password: test_password
+      user_groups:
+        - test

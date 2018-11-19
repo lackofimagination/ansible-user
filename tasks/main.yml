@@ -1,0 +1,48 @@
+---
+- name: create user groups
+  group:
+    name: '{{ item }}'
+  with_items: '{{ user_groups }}'
+
+- name: create user
+  user:
+    name: '{{ user_name }}'
+    password: '{{ user_password | password_hash("sha512") }}'
+    groups: '{{ (user_groups | join(",")) }}'
+    generate_ssh_key: '{{ user_generate_ssh_key }}'
+    shell: '{{ user_shell }}'
+    update_password: on_create
+
+- name: authorized key
+  authorized_key:
+    user: '{{ user_name }}'
+    state: present
+    key: '{{ lookup("file", user_ssh_key) }}'
+  when: user_ssh_key | length > 0
+
+- name: enable sudoers.d
+  lineinfile:
+    path: '/etc/sudoers'
+    regexp: '^#includedir /etc/sudoers.d'
+    line: '#includedir /etc/sudoers.d'
+    state: present
+    backup: true
+  when: user_passwordless_sudo
+
+- name: disable sudoers.d
+  lineinfile:
+    path: '/etc/sudoers'
+    regexp: '^#includedir /etc/sudoers.d'
+    line: '#includedir /etc/sudoers.d'
+    state: absent
+    backup: true
+  when: user_passwordless_sudo == false
+
+- name: enable passwordless sudo
+  copy:
+    content: '%{{ user_name }} ALL=(ALL) NOPASSWD:ALL'
+    dest: '/etc/sudoers.d/{{ user_name }}'
+    owner: 'root'
+    group: 'root'
+    mode: 0440
+  when: user_passwordless_sudo
